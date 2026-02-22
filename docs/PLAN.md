@@ -11,10 +11,10 @@ Enrich this document to plan out each of these parts in detail, with substeps li
 
 ## Part 2: Scaffolding
 Set up the Docker infrastructure, the backend in backend/ with FastAPI, and write the start and stop scripts in the scripts/ directory. This should serve example static HTML to confirm that a 'hello world' example works running locally and also make an API call.
-- [ ] Initialize basic FastAPI app in `backend/` with a simple `/api/hello` route and serving static files from `backend/static`.
-- [ ] Write `Dockerfile` and `docker-compose.yml` to package the backend using `uv`.
-- [ ] Create `scripts/start.sh` and `scripts/stop.sh` scripts for multi-platform (or OS specific).
-- [ ] Add a dummy `index.html` in `backend/static` for "hello world".
+- [x] Initialize basic FastAPI app in `backend/` with a simple `/api/hello` route and serving static files from `backend/static`.
+- [x] Write `Dockerfile` and `docker-compose.yml` to package the backend using `uv`.
+- [x] Create `scripts/start.sh` and `scripts/stop.sh` scripts for multi-platform (or OS specific).
+- [x] Add a dummy `index.html` in `backend/static` for "hello world".
 **Tests/Success Criteria**: Running `scripts/start.sh` starts the container. Going to `http://localhost:8000` shows "hello world". Calling `http://localhost:8000/api/hello` returns a JSON response.
 
 ## Part 3: Add in Frontend
@@ -36,9 +36,9 @@ Now update so that on first hitting /, you need to log in with dummy credentials
 
 ## Part 5: Database modeling
 Now propose a database schema for the Kanban, saving it as JSON. Document the database approach in docs/ and get user sign off.
-- [ ] Design the SQLite schema for users, boards, columns, and cards.
-- [ ] Map the schema to SQLAlchemy models (or similar Python ORM/SQL approach).
-- [ ] Write `docs/DATABASE.md` detailing the schema, tables, and relationships.
+- [x] Design the SQLite schema for users, boards, columns, and cards.
+- [x] Map the schema to SQLAlchemy models (or similar Python ORM/SQL approach).
+- [x] Write `docs/DATABASE.md` detailing the schema, tables, and relationships.
 - [ ] Request user review of the DB approach.
 **Tests/Success Criteria**: `docs/DATABASE.md` exists and clearly documents the schema. User approves the design before implementation.
 
