@@ -8,6 +8,7 @@ echo "Building Docker image..."
 docker build -t kanban-studio .
 
 echo "Starting Docker container..."
+docker rm -f kanban-studio 2>/dev/null || true
 docker run -d --name kanban-studio -p 8000:8000 --env-file .env kanban-studio
 
 echo "Application started!"

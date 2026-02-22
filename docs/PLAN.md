@@ -19,11 +19,11 @@ Set up the Docker infrastructure, the backend in backend/ with FastAPI, and writ
 
 ## Part 3: Add in Frontend
 Now update so that the frontend is statically built and served, so that the app has the demo Kanban board displayed at /. Comprehensive unit and integration tests.
-- [ ] Update frontend build to output a static export (`out` directory).
-- [ ] Configure `next.config.ts` for static export (`output: 'export'`).
-- [ ] Update `Dockerfile` to build the Next.js static site and copy `out/` to the FastAPI static directory.
-- [ ] Update FastAPI backend to serve the `index.html` from the frontend build at `/`.
-- [ ] Ensure frontend unit tests and e2e tests run successfully.
+- [x] Update frontend build to output a static export (`out` directory).
+- [x] Configure `next.config.ts` for static export (`output: 'export'`).
+- [x] Update `Dockerfile` to build the Next.js static site and copy `out/` to the FastAPI static directory.
+- [x] Update FastAPI backend to serve the `index.html` from the frontend build at `/`.
+- [x] Ensure frontend unit tests and e2e tests run successfully.
 **Tests/Success Criteria**: Running the Docker container serves the Kanban board React frontend at the root URL `/`. All frontend tests (`npm run test:all`) pass.
 
 ## Part 4: Add in a fake user sign in experience
