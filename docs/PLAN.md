@@ -44,9 +44,9 @@ Now propose a database schema for the Kanban, saving it as JSON. Document the da
 
 ## Part 6: Backend
 Now add API routes to allow the backend to read and change the Kanban for a given user; test this thoroughly with backend unit tests. The database should be created if it doesn't exist.
-- [ ] Implement database initialization script (creates SQLite DB on startup).
-- [ ] Create FastAPI CRUD routes for boards, columns, and cards.
-- [ ] Write pytest tests for all CRUD operations, including isolated DB test setups.
+- [x] Implement database initialization script (creates SQLite DB on startup).
+- [x] Create FastAPI CRUD routes for boards, columns, and cards.
+- [x] Write pytest tests for all CRUD operations, including isolated DB test setups.
 **Tests/Success Criteria**: All backend unit tests pass. API endpoints return correct HTTP statuses and data for valid and invalid requests. SQLite file is generated successfully locally.
 
 ## Part 7: Frontend + Backend
