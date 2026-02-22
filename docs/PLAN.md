@@ -28,10 +28,10 @@ Now update so that the frontend is statically built and served, so that the app 
 
 ## Part 4: Add in a fake user sign in experience
 Now update so that on first hitting /, you need to log in with dummy credentials ("user", "password") in order to see the Kanban, and you can log out. Comprehensive tests.
-- [ ] Create a dummy `Login` component in frontend.
-- [ ] Wrap the `KanbanBoard` in an auth guard that checks for login state (could be stored in localStorage or context).
-- [ ] Implement logout functionality.
-- [ ] Add unit and E2E tests for the login/logout flow.
+- [x] Create a dummy `Login` component in frontend.
+- [x] Wrap the `KanbanBoard` in an auth guard that checks for login state (could be stored in localStorage or context).
+- [x] Implement logout functionality.
+- [x] Add unit and E2E tests for the login/logout flow.
 **Tests/Success Criteria**: The user is prompted for credentials when visiting `/`. Entering "user" and "password" grants access to the Kanban board. Clicking logout returns them to the login screen.
 
 ## Part 5: Database modeling
