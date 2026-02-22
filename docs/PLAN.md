@@ -51,10 +51,10 @@ Now add API routes to allow the backend to read and change the Kanban for a give
 
 ## Part 7: Frontend + Backend
 Now have the frontend actually use the backend API, so that the app is a proper persistent Kanban board. Test very throughly.
-- [ ] Replace mock data in frontend with `fetch` calls to backend `/api` endpoints.
-- [ ] Update drag-and-drop handlers to send position/column updates to the backend.
-- [ ] Update add/edit/delete card handlers to persist via backend.
-- [ ] Ensure optimistic UI updates or loading spinners are present for good UX.
+- [x] Replace mock data in frontend with `fetch` calls to backend `/api` endpoints.
+- [x] Update drag-and-drop handlers to send position/column updates to the backend.
+- [x] Update add/edit/delete card handlers to persist via backend.
+- [x] Ensure optimistic UI updates or loading spinners are present for good UX.
 **Tests/Success Criteria**: User can use the Kanban board normally, refresh the page, and all changes (card movements, new cards) are persisted and reloaded from the backend. E2E tests pass.
 
 ## Part 8: AI connectivity
