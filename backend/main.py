@@ -89,13 +89,73 @@ def delete_card(card_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Card not found")
     return {"message": "deleted"}
 
-from ai_service import ask_math_question
+from ai_service import ask_math_question, process_chat
+from pydantic import BaseModel
 
 @app.get("/api/ai/test")
 async def test_ai():
     try:
         response = await ask_math_question("What is 2+2?")
         return {"response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class ChatRequest(BaseModel):
+    message: str
+    user_id: int
+
+@app.post("/api/ai/chat")
+async def chat_with_ai(request: ChatRequest, db: Session = Depends(get_db)):
+    try:
+        boards = crud.get_boards(db, user_id=request.user_id)
+        if not boards:
+            raise HTTPException(status_code=404, detail="No board found")
+            
+        board = boards[0]
+        board_data = {
+            "board_title": board.title,
+            "columns": [
+                {
+                    "id": col.id,
+                    "title": col.title,
+                    "cards": [
+                        {"id": card.id, "title": card.title, "description": card.description}
+                        for card in col.cards
+                    ]
+                }
+                for col in board.columns
+            ]
+        }
+        
+        ai_response = await process_chat(request.message, board_data)
+        
+        for op in ai_response.operations:
+            if op.action == "add_card":
+                col = next((c for c in board.columns if c.title.lower() == op.column_name.lower()), None) if op.column_name else None
+                if not col and board.columns: col = board.columns[0]
+                if col:
+                    crud.create_card(db, schemas.CardCreate(
+                        title=op.title or "New Card",
+                        description=op.description or "",
+                        order=len(col.cards),
+                        column_id=col.id
+                    ))
+            elif op.action == "delete_card" and op.card_id:
+                crud.delete_card(db, op.card_id)
+            elif op.action == "update_card" and op.card_id:
+                update_data = {}
+                if op.title is not None: update_data["title"] = op.title
+                if op.description is not None: update_data["description"] = op.description
+                if update_data:
+                    crud.update_card(db, op.card_id, schemas.CardUpdate(**update_data))
+                    
+        db.refresh(board)
+        updated_boards = crud.get_boards(db, user_id=request.user_id)
+        
+        return {
+            "response_message": ai_response.response_message,
+            "board": schemas.Board.model_validate(updated_boards[0]).model_dump()
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

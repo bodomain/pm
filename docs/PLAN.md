@@ -67,11 +67,11 @@ Now allow the backend to make an AI call via OpenAI. Test connectivity with a si
 
 ## Part 9: AI with Kanban
 Now extend the backend call so that it always calls the AI with the JSON of the Kanban board, plus the user's question (and conversation history). The AI should respond with Structured Outputs that includes the response to the user and optionaly an update to the Kanban. Test thoroughly.
-- [ ] Define Structured Outputs schema (JSON schema) for the AI response (message + optional board operations).
-- [ ] Create an endpoint `/api/ai/chat` that accepts user message, gathers current board state from DB, and sends both as context to the AI.
-- [ ] Process AI response: if board operations are present, apply them directly to the database.
-- [ ] Return the AI's textual response and the new board state.
-- [ ] Write backend tests mocking the AI to ensure operations are applied correctly to the DB.
+- [x] Define Structured Outputs schema (JSON schema) for the AI response (message + optional board operations).
+- [x] Create an endpoint `/api/ai/chat` that accepts user message, gathers current board state from DB, and sends both as context to the AI.
+- [x] Process AI response: if board operations are present, apply them directly to the database.
+- [x] Return the AI's textual response and the new board state.
+- [x] Write backend tests mocking the AI to ensure operations are applied correctly to the DB.
 **Tests/Success Criteria**: The backend correctly applies AI-generated mutations to the database (e.g., adding a card when the user asks for it) based on defined user queries.
 
 ## Part 10: Beautiful sidebar widget
