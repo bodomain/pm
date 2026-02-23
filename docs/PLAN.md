@@ -59,10 +59,10 @@ Now have the frontend actually use the backend API, so that the app is a proper 
 
 ## Part 8: AI connectivity
 Now allow the backend to make an AI call via OpenAI. Test connectivity with a simple "2+2" test and ensure the AI call is working.
-- [ ] Configure `OPENAI_API_KEY` from `.env`.
-- [ ] Add an AI service module in FastAPI using the `openai` python library pointing to the official OpenAI API (using `gpt-5-nano` as per `AGENTS.md`).
-- [ ] Create a simple `/api/ai/test` endpoint that prompts the model with "What is 2+2?".
-- [ ] Write a test to ensure this endpoint returns "4".
+- [x] Configure `OPENAI_API_KEY` from `.env`.
+- [x] Add an AI service module in FastAPI using the `openai` python library pointing to the official OpenAI API (using `gpt-5-nano` as per `AGENTS.md`).
+- [x] Create a simple `/api/ai/test` endpoint that prompts the model with "What is 2+2?".
+- [x] Write a test to ensure this endpoint returns "4".
 **Tests/Success Criteria**: Calling `/api/ai/test` successfully connects to the LLM and returns the correct response.
 
 ## Part 9: AI with Kanban

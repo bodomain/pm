@@ -89,6 +89,16 @@ def delete_card(card_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Card not found")
     return {"message": "deleted"}
 
+from ai_service import ask_math_question
+
+@app.get("/api/ai/test")
+async def test_ai():
+    try:
+        response = await ask_math_question("What is 2+2?")
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
