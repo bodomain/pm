@@ -10,6 +10,7 @@ import {
   closestCorners,
   type DragEndEvent,
   type DragStartEvent,
+  type DragOverEvent,
 } from "@dnd-kit/core";
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
@@ -19,6 +20,11 @@ import { createId, initialData, moveCard, type BoardData } from "@/lib/kanban";
 interface KanbanBoardProps {
   onLogout?: () => void;
 }
+
+// Helper: convert backend numeric IDs to namespaced frontend IDs
+const toColId = (id: number | string) => `col-${id}`;
+const toCardId = (id: number | string) => `card-${id}`;
+const fromPrefixedId = (prefixed: string) => parseInt(prefixed.replace(/^(col-|card-)/, ''), 10);
 
 export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
   const [board, setBoard] = useState<BoardData>(() => initialData);
@@ -43,16 +49,17 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
           dbBoard.columns.sort((a: any, b: any) => a.order - b.order);
           
           const columns: typeof initialData.columns = dbBoard.columns.map((c: any) => ({
-            id: String(c.id),
+            id: toColId(c.id),
             title: c.title,
-            cardIds: c.cards.sort((a: any, b: any) => a.order - b.order).map((card: any) => String(card.id)),
+            cardIds: c.cards.sort((a: any, b: any) => a.order - b.order).map((card: any) => toCardId(card.id)),
           }));
           
           const cards: Record<string, any> = {};
           dbBoard.columns.forEach((c: any) => {
             c.cards.forEach((card: any) => {
-              cards[String(card.id)] = {
-                id: String(card.id),
+              const cid = toCardId(card.id);
+              cards[cid] = {
+                id: cid,
                 title: card.title,
                 details: card.description || "",
               };
@@ -81,6 +88,33 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
     setActiveCardId(event.active.id as string);
   };
 
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    setBoard((prev) => {
+      const findColId = (id: string) => {
+        if (prev.columns.some((c) => c.id === id)) return id;
+        return prev.columns.find((c) => c.cardIds.includes(id))?.id;
+      };
+
+      const activeColumnId = findColId(activeId);
+      const overColumnId = findColId(overId);
+
+      if (!activeColumnId || !overColumnId || activeColumnId === overColumnId) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        columns: moveCard(prev.columns, activeId, overId),
+      };
+    });
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveCardId(null);
@@ -89,35 +123,36 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
       return;
     }
 
-    let newColumns = [...board.columns];
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    setBoard((prev) => {
-      newColumns = moveCard(prev.columns, activeId, overId);
-      return {
-        ...prev,
-        columns: newColumns,
-      };
-    });
+    const newColumns = moveCard(board.columns, activeId, overId);
+
+    setBoard((prev) => ({
+      ...prev,
+      columns: moveCard(prev.columns, activeId, overId),
+    }));
 
     try {
       const targetColumn = newColumns.find(c => c.cardIds.includes(activeId));
       if (!targetColumn) return;
       
-      const newOrder = targetColumn.cardIds.indexOf(activeId);
-      const colId = parseInt(targetColumn.id, 10);
-      const cId = parseInt(activeId, 10);
+      const colId = fromPrefixedId(targetColumn.id);
       
-      if (!isNaN(colId) && !isNaN(cId)) {
-        await fetch(`/api/cards/${cId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            column_id: colId,
-            order: newOrder
+      if (!isNaN(colId)) {
+        await Promise.all(
+          targetColumn.cardIds.map((id, index) => {
+            const numId = fromPrefixedId(id);
+            if (!isNaN(numId)) {
+              return fetch(`/api/cards/${numId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ column_id: colId, order: index }),
+              });
+            }
+            return Promise.resolve();
           })
-        });
+        );
       }
     } catch(e) {
       console.error("Failed to update card position", e);
@@ -133,7 +168,7 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
     }));
 
     try {
-      const cId = parseInt(columnId, 10);
+      const cId = fromPrefixedId(columnId);
       if (!isNaN(cId)) {
         await fetch(`/api/columns/${cId}`, {
           method: "PATCH",
@@ -164,7 +199,7 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
     }));
 
     try {
-      const colIdNum = parseInt(columnId, 10);
+      const colIdNum = fromPrefixedId(columnId);
       if (!isNaN(colIdNum)) {
         const order = board.columns.find(c => c.id === columnId)?.cardIds.length || 0;
         const res = await fetch("/api/cards", {
@@ -180,7 +215,7 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
         
         if (res.ok) {
           const realCard = await res.json();
-          const realId = String(realCard.id);
+          const realId = toCardId(realCard.id);
           
           setBoard((prev) => {
             const newCards = { ...prev.cards };
@@ -223,7 +258,7 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
     });
 
     try {
-      const cId = parseInt(cardId, 10);
+      const cId = fromPrefixedId(cardId);
       if (!isNaN(cId)) {
         await fetch(`/api/cards/${cId}`, { method: "DELETE" });
       }
@@ -290,6 +325,7 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
           sensors={sensors}
           collisionDetection={closestCorners}
           onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
           <section className="grid gap-6 lg:grid-cols-5">

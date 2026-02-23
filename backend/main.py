@@ -15,12 +15,20 @@ def setup_dummy_data(db: Session):
     if not user:
         user = crud.create_user(db, schemas.UserCreate(username="user", password="password"))
         board = crud.create_board(db, schemas.BoardCreate(title="Default Board", user_id=user.id))
-        c1 = crud.create_column(db, schemas.ColumnCreate(title="To Do", order=0, board_id=board.id))
-        c2 = crud.create_column(db, schemas.ColumnCreate(title="In Progress", order=1, board_id=board.id))
-        c3 = crud.create_column(db, schemas.ColumnCreate(title="Done", order=2, board_id=board.id))
-        crud.create_card(db, schemas.CardCreate(title="Learn FastAPI", description="Read the docs", order=0, column_id=c1.id))
-        crud.create_card(db, schemas.CardCreate(title="Setup DB", description="SQLite stuff", order=1, column_id=c1.id))
-        crud.create_card(db, schemas.CardCreate(title="Design Frontend", description="React / Next.js", order=0, column_id=c2.id))
+        c1 = crud.create_column(db, schemas.ColumnCreate(title="Backlog", order=0, board_id=board.id))
+        c2 = crud.create_column(db, schemas.ColumnCreate(title="Discovery", order=1, board_id=board.id))
+        c3 = crud.create_column(db, schemas.ColumnCreate(title="In Progress", order=2, board_id=board.id))
+        c4 = crud.create_column(db, schemas.ColumnCreate(title="Review", order=3, board_id=board.id))
+        c5 = crud.create_column(db, schemas.ColumnCreate(title="Done", order=4, board_id=board.id))
+        
+        crud.create_card(db, schemas.CardCreate(title="Align roadmap themes", description="Draft quarterly themes with impact statements and metrics.", order=0, column_id=c1.id))
+        crud.create_card(db, schemas.CardCreate(title="Gather customer signals", description="Review support tags, sales notes, and churn feedback.", order=1, column_id=c1.id))
+        crud.create_card(db, schemas.CardCreate(title="Prototype analytics view", description="Sketch initial dashboard layout and key drill-downs.", order=0, column_id=c2.id))
+        crud.create_card(db, schemas.CardCreate(title="Refine status language", description="Standardize column labels and tone across the board.", order=0, column_id=c3.id))
+        crud.create_card(db, schemas.CardCreate(title="Design card layout", description="Add hierarchy and spacing for scanning dense lists.", order=1, column_id=c3.id))
+        crud.create_card(db, schemas.CardCreate(title="QA micro-interactions", description="Verify hover, focus, and loading states.", order=0, column_id=c4.id))
+        crud.create_card(db, schemas.CardCreate(title="Ship marketing page", description="Final copy approved and asset pack delivered.", order=0, column_id=c5.id))
+        crud.create_card(db, schemas.CardCreate(title="Close onboarding sprint", description="Document release notes and share internally.", order=1, column_id=c5.id))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

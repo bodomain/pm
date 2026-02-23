@@ -54,16 +54,17 @@ export function AIChatSidebar({ userId, onUpdateBoard }: AIChatSidebarProps) {
           dbBoard.columns.sort((a: any, b: any) => a.order - b.order);
           
           const columns = dbBoard.columns.map((c: any) => ({
-            id: String(c.id),
+            id: `col-${c.id}`,
             title: c.title,
-            cardIds: c.cards.sort((a: any, b: any) => a.order - b.order).map((card: any) => String(card.id)),
+            cardIds: c.cards.sort((a: any, b: any) => a.order - b.order).map((card: any) => `card-${card.id}`),
           }));
           
           const cards: Record<string, any> = {};
           dbBoard.columns.forEach((c: any) => {
             c.cards.forEach((card: any) => {
-              cards[String(card.id)] = {
-                id: String(card.id),
+              const cid = `card-${card.id}`;
+              cards[cid] = {
+                id: cid,
                 title: card.title,
                 details: card.description || "",
               };

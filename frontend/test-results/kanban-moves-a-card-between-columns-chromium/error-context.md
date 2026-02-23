@@ -1,0 +1,122 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [active]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - navigation [ref=e7]:
+            - button "previous" [disabled] [ref=e8]:
+              - img "previous" [ref=e9]
+            - generic [ref=e11]:
+              - generic [ref=e12]: 1/
+              - text: "2"
+            - button "next" [ref=e13] [cursor=pointer]:
+              - img "next" [ref=e14]
+          - img
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - img [ref=e18]
+            - generic "Latest available version is detected (16.1.6)." [ref=e20]: Next.js 16.1.6
+            - generic [ref=e21]: Turbopack
+          - img
+      - generic [ref=e22]:
+        - dialog "Console Error" [ref=e23]:
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]:
+                - generic [ref=e30]: Console Error
+                - generic [ref=e31]:
+                  - button "Copy Error Info" [ref=e32] [cursor=pointer]:
+                    - img [ref=e33]
+                  - button "No related documentation found" [disabled] [ref=e35]:
+                    - img [ref=e36]
+                  - button "Attach Node.js inspector" [ref=e38] [cursor=pointer]:
+                    - img [ref=e39]
+              - generic [ref=e48]: Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.
+            - generic [ref=e49]:
+              - generic [ref=e50]:
+                - paragraph [ref=e52]:
+                  - img [ref=e54]
+                  - generic [ref=e57]: src/components/KanbanColumn.tsx (53:13) @ <unknown>
+                  - button "Open in editor" [ref=e58] [cursor=pointer]:
+                    - img [ref=e60]
+                - generic [ref=e63]:
+                  - generic [ref=e64]: "51 | <SortableContext items={column.cardIds} strategy={verticalListSortingStrategy}>"
+                  - generic [ref=e65]: "52 | {cards.map((card) => ("
+                  - generic [ref=e66]: "> 53 | <KanbanCard"
+                  - generic [ref=e67]: "| ^"
+                  - generic [ref=e68]: "54 | key={card.id}"
+                  - generic [ref=e69]: "55 | card={card}"
+                  - generic [ref=e70]: "56 | onDelete={(cardId) => onDeleteCard(column.id, cardId)}"
+              - generic [ref=e71]:
+                - generic [ref=e72]:
+                  - paragraph [ref=e73]:
+                    - text: Call Stack
+                    - generic [ref=e74]: "58"
+                  - button "Show 51 ignore-listed frame(s)" [ref=e75] [cursor=pointer]:
+                    - text: Show 51 ignore-listed frame(s)
+                    - img [ref=e76]
+                - generic [ref=e78]:
+                  - generic [ref=e79]:
+                    - text: <unknown>
+                    - button "Open <unknown> in editor" [ref=e80] [cursor=pointer]:
+                      - img [ref=e81]
+                  - text: src/components/KanbanColumn.tsx (53:13)
+                - generic [ref=e83]:
+                  - generic [ref=e84]: Array.map
+                  - text: <anonymous>
+                - generic [ref=e85]:
+                  - generic [ref=e86]:
+                    - text: KanbanColumn
+                    - button "Open KanbanColumn in editor" [ref=e87] [cursor=pointer]:
+                      - img [ref=e88]
+                  - text: src/components/KanbanColumn.tsx (52:18)
+                - generic [ref=e90]:
+                  - generic [ref=e91]:
+                    - text: <unknown>
+                    - button "Open <unknown> in editor" [ref=e92] [cursor=pointer]:
+                      - img [ref=e93]
+                  - text: src/components/KanbanBoard.tsx (333:15)
+                - generic [ref=e95]:
+                  - generic [ref=e96]: Array.map
+                  - text: <anonymous>
+                - generic [ref=e97]:
+                  - generic [ref=e98]:
+                    - text: KanbanBoard
+                    - button "Open KanbanBoard in editor" [ref=e99] [cursor=pointer]:
+                      - img [ref=e100]
+                  - text: src/components/KanbanBoard.tsx (332:28)
+                - generic [ref=e102]:
+                  - generic [ref=e103]:
+                    - text: Home
+                    - button "Open Home in editor" [ref=e104] [cursor=pointer]:
+                      - img [ref=e105]
+                  - text: src/app/page.tsx (30:5)
+          - generic [ref=e107]: "1"
+          - generic [ref=e108]: "2"
+        - contentinfo [ref=e109]:
+          - region "Error feedback" [ref=e110]:
+            - paragraph [ref=e111]:
+              - link "Was this helpful?" [ref=e112] [cursor=pointer]:
+                - /url: https://nextjs.org/telemetry#error-feedback
+            - button "Mark as helpful" [ref=e113] [cursor=pointer]:
+              - img [ref=e114]
+            - button "Mark as not helpful" [ref=e117] [cursor=pointer]:
+              - img [ref=e118]
+    - generic [ref=e124] [cursor=pointer]:
+      - button "Open Next.js Dev Tools" [ref=e125]:
+        - img [ref=e126]
+      - generic [ref=e129]:
+        - button "Open issues overlay" [ref=e130]:
+          - generic [ref=e131]:
+            - generic [ref=e132]: "1"
+            - generic [ref=e133]: "2"
+          - generic [ref=e134]:
+            - text: Issue
+            - generic [ref=e135]: s
+        - button "Collapse issues badge" [ref=e136]:
+          - img [ref=e137]
+  - 'heading "Application error: a client-side exception has occurred while loading 127.0.0.1 (see the browser console for more information)." [level=2] [ref=e141]'
+```
