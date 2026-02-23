@@ -76,8 +76,8 @@ Now extend the backend call so that it always calls the AI with the JSON of the 
 
 ## Part 10: Beautiful sidebar widget
 Now add a beautiful sidebar widget to the UI supporting full AI chat, and allowing the LLM (as it determines) to update the Kanban based on its Structured Outputs. If the AI updates the Kanban, then the UI should refresh automatically.
-- [ ] Incorporate `AIChatSidebar.tsx` into the main layout allowing it to toggle or sit alongside the board.
-- [ ] Connect the chat UI to `/api/ai/chat` endpoint.
-- [ ] Automatically update the frontend Kanban board state when the API response includes a changed board state.
-- [ ] Add polish, transitions, and adhere to color scheme (Yellow/Blue/Purple from `AGENTS.md`).
+- [x] Incorporate `AIChatSidebar.tsx` into the main layout allowing it to toggle or sit alongside the board.
+- [x] Connect the chat UI to `/api/ai/chat` endpoint.
+- [x] Automatically update the frontend Kanban board state when the API response includes a changed board state.
+- [x] Add polish, transitions, and adhere to color scheme (Yellow/Blue/Purple from `AGENTS.md`).
 **Tests/Success Criteria**: User can type "Add a card for writing tests" into the sidebar, the AI responds in chat, and the card immediately appears on the board without a manual page refresh.

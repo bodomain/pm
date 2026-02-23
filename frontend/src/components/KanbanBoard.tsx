@@ -13,6 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
+import { AIChatSidebar } from "@/components/AIChatSidebar";
 import { createId, initialData, moveCard, type BoardData } from "@/lib/kanban";
 
 interface KanbanBoardProps {
@@ -22,6 +23,7 @@ interface KanbanBoardProps {
 export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
   const [board, setBoard] = useState<BoardData>(() => initialData);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
     const loadBoard = async () => {
@@ -29,6 +31,7 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
         const userRes = await fetch("/api/users/user");
         if (!userRes.ok) return;
         const user = await userRes.json();
+        setUserId(user.id);
         
         const boardsRes = await fetch(`/api/users/${user.id}/boards`);
         if (!boardsRes.ok) return;
@@ -310,6 +313,9 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
           </DragOverlay>
         </DndContext>
       </main>
+      {userId && (
+        <AIChatSidebar userId={userId} onUpdateBoard={setBoard} />
+      )}
     </div>
   );
 };

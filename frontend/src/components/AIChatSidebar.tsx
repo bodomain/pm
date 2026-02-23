@@ -9,11 +9,11 @@ type Message = {
 };
 
 interface AIChatSidebarProps {
-  board: BoardData;
+  userId: number;
   onUpdateBoard: (newBoard: BoardData) => void;
 }
 
-export function AIChatSidebar({ board, onUpdateBoard }: AIChatSidebarProps) {
+export function AIChatSidebar({ userId, onUpdateBoard }: AIChatSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -40,17 +40,40 @@ export function AIChatSidebar({ board, onUpdateBoard }: AIChatSidebarProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: userMessage.content,
-          history: messages,
-          board_state: board,
+          user_id: userId,
         }),
       });
       
       const data = await res.json();
       
-      setMessages((prev) => [...prev, { role: "assistant", content: data.message }]);
-      
-      if (data.kanban_updates && data.kanban_updates.columns) {
-        onUpdateBoard(data.kanban_updates as BoardData);
+      if (res.ok) {
+        setMessages((prev) => [...prev, { role: "assistant", content: data.response_message }]);
+        
+        if (data.board && data.board.columns) {
+          const dbBoard = data.board;
+          dbBoard.columns.sort((a: any, b: any) => a.order - b.order);
+          
+          const columns = dbBoard.columns.map((c: any) => ({
+            id: String(c.id),
+            title: c.title,
+            cardIds: c.cards.sort((a: any, b: any) => a.order - b.order).map((card: any) => String(card.id)),
+          }));
+          
+          const cards: Record<string, any> = {};
+          dbBoard.columns.forEach((c: any) => {
+            c.cards.forEach((card: any) => {
+              cards[String(card.id)] = {
+                id: String(card.id),
+                title: card.title,
+                details: card.description || "",
+              };
+            });
+          });
+          
+          onUpdateBoard({ columns, cards });
+        }
+      } else {
+        setMessages((prev) => [...prev, { role: "assistant", content: data.detail || "Error." }]);
       }
     } catch (err) {
       console.error(err);
