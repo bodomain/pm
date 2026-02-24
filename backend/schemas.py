@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
 class CardBase(BaseModel):
@@ -18,8 +18,7 @@ class CardUpdate(BaseModel):
 class Card(CardBase):
     id: int
     column_id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ColumnBase(BaseModel):
     title: str
@@ -36,8 +35,7 @@ class Column(ColumnBase):
     id: int
     board_id: int
     cards: List[Card] = []
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class BoardBase(BaseModel):
     title: str
@@ -49,8 +47,7 @@ class Board(BoardBase):
     id: int
     user_id: int
     columns: List[Column] = []
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserBase(BaseModel):
     username: str
@@ -61,5 +58,4 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     boards: List[Board] = []
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

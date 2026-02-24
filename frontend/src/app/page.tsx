@@ -9,6 +9,7 @@ export default function Home() {
 
   useEffect(() => {
     const auth = localStorage.getItem("isAuthenticated");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsAuthenticated(auth === "true");
   }, []);
 

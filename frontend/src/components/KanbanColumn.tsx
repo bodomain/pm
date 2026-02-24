@@ -1,9 +1,11 @@
 import clsx from "clsx";
+import { useMemo, useCallback } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { Card, Column } from "@/lib/kanban";
 import { KanbanCard } from "@/components/KanbanCard";
 import { NewCardForm } from "@/components/NewCardForm";
+import React from "react";
 
 type KanbanColumnProps = {
   column: Column;
@@ -13,7 +15,7 @@ type KanbanColumnProps = {
   onDeleteCard: (columnId: string, cardId: string) => void;
 };
 
-export const KanbanColumn = ({
+export const KanbanColumn = React.memo(({
   column,
   cards,
   onRename,
@@ -21,6 +23,23 @@ export const KanbanColumn = ({
   onDeleteCard,
 }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
+  
+  // Memoize card IDs to provide a stable reference to SortableContext.
+  // We use a stringified dependency to ensure stability even if the array reference changes
+  // but the content remains the same.
+  const memoizedCardIds = useMemo(() => column.cardIds, [column.cardIds.join(',')]);
+
+  const handleRename = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    onRename(column.id, event.target.value);
+  }, [column.id, onRename]);
+
+  const handleAdd = useCallback((title: string, details: string) => {
+    onAddCard(column.id, title, details);
+  }, [column.id, onAddCard]);
+
+  const handleDelete = useCallback((cardId: string) => {
+    onDeleteCard(column.id, cardId);
+  }, [column.id, onDeleteCard]);
 
   return (
     <section
@@ -41,19 +60,19 @@ export const KanbanColumn = ({
           </div>
           <input
             value={column.title}
-            onChange={(event) => onRename(column.id, event.target.value)}
+            onChange={handleRename}
             className="mt-3 w-full bg-transparent font-display text-lg font-semibold text-[var(--navy-dark)] outline-none"
             aria-label="Column title"
           />
         </div>
       </div>
       <div className="mt-4 flex flex-1 flex-col gap-3">
-        <SortableContext items={column.cardIds} strategy={verticalListSortingStrategy}>
+        <SortableContext items={memoizedCardIds} strategy={verticalListSortingStrategy}>
           {cards.map((card) => (
             <KanbanCard
               key={card.id}
               card={card}
-              onDelete={(cardId) => onDeleteCard(column.id, cardId)}
+              onDelete={handleDelete}
             />
           ))}
         </SortableContext>
@@ -64,8 +83,10 @@ export const KanbanColumn = ({
         )}
       </div>
       <NewCardForm
-        onAdd={(title, details) => onAddCard(column.id, title, details)}
+        onAdd={handleAdd}
       />
     </section>
   );
-};
+});
+
+KanbanColumn.displayName = "KanbanColumn";

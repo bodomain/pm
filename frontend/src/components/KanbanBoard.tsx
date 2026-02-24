@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -15,21 +15,31 @@ import {
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
 import { AIChatSidebar } from "@/components/AIChatSidebar";
-import { createId, initialData, moveCard, type BoardData } from "@/lib/kanban";
+import { createId, initialData, moveCard, type BoardData, type Column, type DBBoard, type DBColumn, type DBCard, type Card } from "@/lib/kanban";
 
 interface KanbanBoardProps {
   onLogout?: () => void;
+  // for testing or server-side rendering we can provide a starting board
+  initialBoard?: BoardData;
 }
 
 // Helper: convert backend numeric IDs to namespaced frontend IDs
 const toColId = (id: number | string) => `col-${id}`;
 const toCardId = (id: number | string) => `card-${id}`;
 const fromPrefixedId = (prefixed: string) => parseInt(prefixed.replace(/^(col-|card-)/, ''), 10);
+const findColumnId = (columns: Column[], id: string) => {
+  if (columns.some((column) => column.id === id)) {
+    return id;
+  }
+  return columns.find((column) => column.cardIds.includes(id))?.id;
+};
 
-export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
-  const [board, setBoard] = useState<BoardData>(() => initialData);
+export const KanbanBoard = ({ onLogout, initialBoard }: KanbanBoardProps) => {
+  const [board, setBoard] = useState<BoardData>(() => initialBoard ?? initialData);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
+  const pointerPosRef = useRef<{ x: number; y: number } | null>(null);
+  const activePointerListenerRef = useRef<((e: PointerEvent) => void) | null>(null);
 
   useEffect(() => {
     const loadBoard = async () => {
@@ -44,19 +54,18 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
         const boards = await boardsRes.json();
         
         if (boards.length > 0) {
-          const dbBoard = boards[0];
+          const dbBoard: DBBoard = boards[0];
+          dbBoard.columns.sort((a: DBColumn, b: DBColumn) => a.order - b.order);
           
-          dbBoard.columns.sort((a: any, b: any) => a.order - b.order);
-          
-          const columns: typeof initialData.columns = dbBoard.columns.map((c: any) => ({
+          const columns: Column[] = dbBoard.columns.map((c: DBColumn) => ({
             id: toColId(c.id),
             title: c.title,
-            cardIds: c.cards.sort((a: any, b: any) => a.order - b.order).map((card: any) => toCardId(card.id)),
+            cardIds: c.cards.sort((a: DBCard, b: DBCard) => a.order - b.order).map((card: DBCard) => toCardId(card.id)),
           }));
           
-          const cards: Record<string, any> = {};
-          dbBoard.columns.forEach((c: any) => {
-            c.cards.forEach((card: any) => {
+          const cards: Record<string, Card> = {};
+          dbBoard.columns.forEach((c: DBColumn) => {
+            c.cards.forEach((card: DBCard) => {
               const cid = toCardId(card.id);
               cards[cid] = {
                 id: cid,
@@ -76,90 +85,134 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
     loadBoard();
   }, []);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 6 },
-    })
-  );
+  const sensorOptions = useMemo(() => ({
+    activationConstraint: { distance: 6 },
+  }), []);
+  
+  const mouseSensor = useSensor(PointerSensor, sensorOptions);
+  const sensors = useSensors(mouseSensor);
 
   const cardsById = useMemo(() => board.cards, [board.cards]);
 
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveCardId(event.active.id as string);
-  };
+    
+    const onPointerMove = (e: PointerEvent) => {
+      pointerPosRef.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener("pointermove", onPointerMove);
+    activePointerListenerRef.current = onPointerMove;
+  }, []);
 
-  const handleDragOver = (event: DragOverEvent) => {
+  const handleDragOver = useCallback((event: DragOverEvent) => {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
+    if (!over) return;
 
     const activeId = active.id as string;
     const overId = over.id as string;
 
     setBoard((prev) => {
-      const findColId = (id: string) => {
-        if (prev.columns.some((c) => c.id === id)) return id;
-        return prev.columns.find((c) => c.cardIds.includes(id))?.id;
-      };
-
-      const activeColumnId = findColId(activeId);
-      const overColumnId = findColId(overId);
+      const activeColumnId = findColumnId(prev.columns, activeId);
+      const overColumnId = findColumnId(prev.columns, overId);
 
       if (!activeColumnId || !overColumnId || activeColumnId === overColumnId) {
         return prev;
       }
 
-      return {
-        ...prev,
-        columns: moveCard(prev.columns, activeId, overId),
-      };
+      const nextColumns = moveCard(prev.columns, activeId, overColumnId);
+      if (nextColumns === prev.columns) return prev;
+      
+      return { ...prev, columns: nextColumns };
     });
-  };
+  }, []);
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
+    const activeId = active.id as string;
     setActiveCardId(null);
 
-    if (!over || active.id === over.id) {
+    if (activePointerListenerRef.current) {
+      window.removeEventListener("pointermove", activePointerListenerRef.current);
+      activePointerListenerRef.current = null;
+    }
+
+    let resolvedOverId = over?.id as string | undefined;
+
+    if (!resolvedOverId || resolvedOverId === activeId) {
+      const p = pointerPosRef.current;
+      if (p) {
+        const el = document.elementFromPoint(p.x, p.y);
+        const col = el?.closest('[data-testid^="column-"]');
+        if (col) {
+          const testId = col.getAttribute('data-testid');
+          resolvedOverId = testId?.replace(/^column-/, '');
+        }
+      }
+    }
+
+    if (!resolvedOverId || resolvedOverId === activeId) {
+      pointerPosRef.current = null;
       return;
     }
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+    let finalColumns: Column[] = [];
+    setBoard((prev) => {
+      const currentActiveColId = findColumnId(prev.columns, activeId);
+      if (resolvedOverId === currentActiveColId) return prev;
+      finalColumns = moveCard(prev.columns, activeId, resolvedOverId);
+      return { ...prev, columns: finalColumns };
+    });
 
-    const newColumns = moveCard(board.columns, activeId, overId);
+    // API side effects
+    setTimeout(async () => {
+      if (finalColumns.length === 0) return;
+      try {
+        const activeColumnId = findColumnId(board.columns, activeId);
+        if (!activeColumnId) return;
 
-    setBoard((prev) => ({
-      ...prev,
-      columns: moveCard(prev.columns, activeId, overId),
-    }));
+        const targetColumn = finalColumns.find(c => c.cardIds.includes(activeId));
+        const sourceColumn = finalColumns.find(c => c.id === activeColumnId);
+        if (!targetColumn) return;
 
-    try {
-      const targetColumn = newColumns.find(c => c.cardIds.includes(activeId));
-      if (!targetColumn) return;
-      
-      const colId = fromPrefixedId(targetColumn.id);
-      
-      if (!isNaN(colId)) {
-        await Promise.all(
-          targetColumn.cardIds.map((id, index) => {
+        const targetColIdNum = fromPrefixedId(targetColumn.id);
+        const sourceColIdNum = sourceColumn ? fromPrefixedId(sourceColumn.id) : null;
+
+        if (!isNaN(targetColIdNum)) {
+          const updates = targetColumn.cardIds.map((id, index) => {
             const numId = fromPrefixedId(id);
             if (!isNaN(numId)) {
               return fetch(`/api/cards/${numId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ column_id: colId, order: index }),
+                body: JSON.stringify({ column_id: targetColIdNum, order: index }),
               });
             }
             return Promise.resolve();
-          })
-        );
-      }
-    } catch(e) {
-      console.error("Failed to update card position", e);
-    }
-  };
+          });
 
-  const handleRenameColumn = async (columnId: string, title: string) => {
+          if (sourceColumn && sourceColIdNum !== targetColIdNum) {
+            sourceColumn.cardIds.forEach((id, index) => {
+              const numId = fromPrefixedId(id);
+              if (!isNaN(numId)) {
+                updates.push(fetch(`/api/cards/${numId}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ column_id: sourceColIdNum, order: index }),
+                }));
+              }
+            });
+          }
+          await Promise.all(updates);
+        }
+      } catch (e) {
+        console.error("Failed to update card position", e);
+      }
+    }, 0);
+
+    pointerPosRef.current = null;
+  }, [board.columns]);
+
+  const handleRenameColumn = useCallback(async (columnId: string, title: string) => {
     setBoard((prev) => ({
       ...prev,
       columns: prev.columns.map((column) =>
@@ -179,9 +232,9 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
     } catch (e) {
        console.error("Failed to rename column", e);
     }
-  };
+  }, []);
 
-  const handleAddCard = async (columnId: string, title: string, details: string) => {
+  const handleAddCard = useCallback(async (columnId: string, title: string, details: string) => {
     const optimisticId = createId("card");
     const newDetails = details || "No details yet.";
     
@@ -205,27 +258,20 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
         const res = await fetch("/api/cards", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title,
-            description: newDetails,
-            order,
-            column_id: colIdNum,
-          }),
+          body: JSON.stringify({ title, description: newDetails, order, column_id: colIdNum }),
         });
         
         if (res.ok) {
           const realCard = await res.json();
           const realId = toCardId(realCard.id);
-          
-          setBoard((prev) => {
-            const newCards = { ...prev.cards };
+          setBoard((latest) => {
+            const newCards = { ...latest.cards };
             delete newCards[optimisticId];
             newCards[realId] = { id: realId, title: realCard.title, details: realCard.description || "" };
-            
             return {
-              ...prev,
+              ...latest,
               cards: newCards,
-              columns: prev.columns.map((col) => 
+              columns: latest.columns.map((col) => 
                  col.id === columnId 
                    ? { ...col, cardIds: col.cardIds.map(id => id === optimisticId ? realId : id) }
                    : col
@@ -237,9 +283,9 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
     } catch(e) {
       console.error("Failed to add card to DB", e);
     }
-  };
+  }, [board.columns]);
 
-  const handleDeleteCard = async (columnId: string, cardId: string) => {
+  const handleDeleteCard = useCallback(async (columnId: string, cardId: string) => {
     setBoard((prev) => {
       const newCards = { ...prev.cards };
       delete newCards[cardId];
@@ -248,10 +294,7 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
         cards: newCards,
         columns: prev.columns.map((column) =>
           column.id === columnId
-            ? {
-                ...column,
-                cardIds: column.cardIds.filter((id) => id !== cardId),
-              }
+            ? { ...column, cardIds: column.cardIds.filter((id) => id !== cardId) }
             : column
         ),
       };
@@ -265,7 +308,7 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
     } catch(e) {
       console.error("Failed to delete card", e);
     }
-  };
+  }, []);
 
   const activeCard = activeCardId ? cardsById[activeCardId] : null;
 
@@ -333,14 +376,14 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
               <KanbanColumn
                 key={column.id}
                 column={column}
-                cards={column.cardIds.map((cardId) => board.cards[cardId])}
+                cards={column.cardIds.map(id => board.cards[id])}
                 onRename={handleRenameColumn}
                 onAddCard={handleAddCard}
                 onDeleteCard={handleDeleteCard}
               />
             ))}
           </section>
-          <DragOverlay>
+          <DragOverlay className="pointer-events-none" data-testid="drag-overlay">
             {activeCard ? (
               <div className="w-[260px]">
                 <KanbanCardPreview card={activeCard} />

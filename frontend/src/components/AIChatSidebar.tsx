@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import type { BoardData } from "@/lib/kanban";
+import type { BoardData, DBBoard, DBColumn, DBCard, Card } from "@/lib/kanban";
 
 type Message = {
   role: "user" | "assistant";
@@ -50,18 +50,18 @@ export function AIChatSidebar({ userId, onUpdateBoard }: AIChatSidebarProps) {
         setMessages((prev) => [...prev, { role: "assistant", content: data.response_message }]);
         
         if (data.board && data.board.columns) {
-          const dbBoard = data.board;
-          dbBoard.columns.sort((a: any, b: any) => a.order - b.order);
+          const dbBoard: DBBoard = data.board;
+          dbBoard.columns.sort((a: DBColumn, b: DBColumn) => a.order - b.order);
           
-          const columns = dbBoard.columns.map((c: any) => ({
+          const columns = dbBoard.columns.map((c: DBColumn) => ({
             id: `col-${c.id}`,
             title: c.title,
-            cardIds: c.cards.sort((a: any, b: any) => a.order - b.order).map((card: any) => `card-${card.id}`),
+            cardIds: c.cards.sort((a: DBCard, b: DBCard) => a.order - b.order).map((card: DBCard) => `card-${card.id}`),
           }));
           
-          const cards: Record<string, any> = {};
-          dbBoard.columns.forEach((c: any) => {
-            c.cards.forEach((card: any) => {
+          const cards: Record<string, Card> = {};
+          dbBoard.columns.forEach((c: DBColumn) => {
+            c.cards.forEach((card: DBCard) => {
               const cid = `card-${card.id}`;
               cards[cid] = {
                 id: cid,
@@ -106,7 +106,7 @@ export function AIChatSidebar({ userId, onUpdateBoard }: AIChatSidebarProps) {
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (
               <p className="text-sm text-[var(--gray-text)] text-center mt-10">
-                Ask me to modify the board, e.g. "Add a card to Backlog for creating tests".
+                Ask me to modify the board, e.g. &quot;Add a card to Backlog for creating tests&quot;.
               </p>
             )}
             {messages.map((msg, idx) => (

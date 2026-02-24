@@ -15,6 +15,26 @@ export type BoardData = {
   cards: Record<string, Card>;
 };
 
+export type DBCard = {
+  id: number;
+  title: string;
+  description: string | null;
+  order: number;
+};
+
+export type DBColumn = {
+  id: number;
+  title: string;
+  order: number;
+  cards: DBCard[];
+};
+
+export type DBBoard = {
+  id: number;
+  title: string;
+  columns: DBColumn[];
+};
+
 export const initialData: BoardData = {
   columns: [
     { id: "col-backlog", title: "Backlog", cardIds: ["card-1", "card-2"] },
