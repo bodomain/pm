@@ -24,26 +24,39 @@ test("adds a card to a column", async ({ page }) => {
 
 test("moves a card between columns", async ({ page }) => {
   await page.goto("/");
-  const card = page.locator('[data-testid^="card-"]').first();
-  const targetColumn = page.locator('[data-testid^="column-"]').nth(3);
-  const cardBox = await card.boundingBox();
-  const columnBox = await targetColumn.boundingBox();
-  if (!cardBox || !columnBox) {
-    throw new Error("Unable to resolve drag coordinates.");
-  }
 
+  // Wait for board to load (first card becomes visible)
+  await expect(page.locator('[data-testid^="card-"]').first()).toBeVisible();
+
+  // Get card title from source card (first card in the board)
+  const sourceCard = page.locator('[data-testid^="card-"]').first();
+  const cardTitle = await sourceCard.locator("h4").textContent();
+  if (!cardTitle) throw new Error("Card title not found");
+
+  // Get the target column (4th column, index 3 = Review)
+  const targetColumn = page.locator('[data-testid^="column-"]').nth(3);
+  // Ensure target column has at least one card to drop onto
+  await expect(targetColumn.locator('[data-testid^="card-"]').first()).toBeVisible();
+  const targetCard = targetColumn.locator('[data-testid^="card-"]').first();
+
+  // Get bounding boxes for drag coordinates
+  const sourceCardBox = await sourceCard.boundingBox();
+  const targetCardBox = await targetCard.boundingBox();
+  if (!sourceCardBox || !targetCardBox) throw new Error("Could not get bounding boxes");
+
+  // Perform drag: source card -> target card
   await page.mouse.move(
-    cardBox.x + cardBox.width / 2,
-    cardBox.y + cardBox.height / 2
+    sourceCardBox.x + sourceCardBox.width / 2,
+    sourceCardBox.y + sourceCardBox.height / 2
   );
   await page.mouse.down();
   await page.mouse.move(
-    columnBox.x + columnBox.width / 2,
-    columnBox.y + 120,
+    targetCardBox.x + targetCardBox.width / 2,
+    targetCardBox.y + targetCardBox.height / 2,
     { steps: 12 }
   );
   await page.mouse.up();
-  
-  const cardTitle = await card.locator("h4").textContent();
-  await expect(targetColumn.getByText(cardTitle as string)).toBeVisible();
+
+  // Verify the moved card now appears in the target column
+  await expect(targetColumn.getByText(cardTitle)).toBeVisible();
 });
