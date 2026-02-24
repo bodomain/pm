@@ -88,57 +88,57 @@ export function AIChatSidebar({ userId, onUpdateBoard }: AIChatSidebarProps) {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary-blue)] text-white shadow-lg transition-transform hover:scale-105"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--cosmic-indigo)] text-neon-cyan shadow-[var(--glow-cyan)] transition-transform hover:scale-110 border border-[var(--cyan-glow)]"
         aria-label="Open AI Chat"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
       </button>
 
       {isOpen && (
-        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-[var(--stroke)] bg-white shadow-2xl transition-transform" data-testid="ai-sidebar">
-          <div className="flex items-center justify-between border-b border-[var(--stroke)] p-4">
-            <h2 className="font-semibold text-[var(--navy-dark)]">AI Assistant</h2>
-            <button onClick={() => setIsOpen(false)} className="rounded-full p-2 hover:bg-gray-100 text-[var(--gray-text)]">
+        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-[var(--glass-border)] glass-panel rounded-none shadow-2xl transition-transform" data-testid="ai-sidebar">
+          <div className="flex items-center justify-between border-b border-[var(--glass-border)] p-4">
+            <h2 className="font-semibold gradient-text text-xl drop-shadow-md">AI Assistant</h2>
+            <button onClick={() => setIsOpen(false)} className="rounded-full p-2 hover:bg-[var(--glass-light)] text-[var(--text-secondary)] transition-smooth hover:text-white">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
           </div>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (
-              <p className="text-sm text-[var(--gray-text)] text-center mt-10">
+              <p className="text-sm text-[var(--text-muted)] text-center mt-10">
                 Ask me to modify the board, e.g. &quot;Add a card to Backlog for creating tests&quot;.
               </p>
             )}
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === "user" ? "bg-[var(--primary-blue)] text-white" : "bg-gray-100 text-[var(--navy-dark)]"}`}>
+                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-md ${msg.role === "user" ? "bg-gradient-to-r from-[var(--cyan-glow)] to-[var(--purple-neon)] text-white shadow-[var(--glow-purple)]" : "glass-card text-[var(--text-primary)]"}`}>
                   {msg.content}
                 </div>
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm bg-gray-100 text-[var(--gray-text)] animate-pulse">
-                  Thinking...
+                <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm glass-card text-[var(--text-muted)] animate-pulse shadow-[var(--glow-cyan)]">
+                  Thinking in the cosmos...
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleSubmit} className="border-t border-[var(--stroke)] p-4">
+          <form onSubmit={handleSubmit} className="border-t border-[var(--glass-border)] p-4 glass-panel rounded-none">
             <div className="flex gap-2">
               <input 
                 type="text" 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask the AI..."
-                className="flex-1 rounded-full border border-[var(--stroke)] px-4 py-2 text-sm focus:border-[var(--primary-blue)] focus:outline-none"
+                className="flex-1 rounded-full glass-input px-4 py-2 text-sm text-white placeholder-[var(--text-muted)]"
               />
               <button 
                 type="submit" 
                 disabled={isLoading || !input.trim()}
-                className="flex items-center justify-center rounded-full bg-[var(--primary-blue)] px-4 py-2 text-white disabled:opacity-50"
+                className="flex items-center justify-center rounded-full bg-gradient-to-r from-[var(--cyan-glow)] to-[var(--purple-neon)] px-4 py-2 text-white disabled:opacity-50 shadow-[var(--glow-purple)] transition-smooth hover:brightness-110"
               >
                 Send
               </button>

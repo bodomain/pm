@@ -24,7 +24,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${displayFont.variable} ${bodyFont.variable}`}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body className={`${displayFont.variable} ${bodyFont.variable} h-full`}>
+        {/* Cosmic Background */}
+        <div className="cosmic-background"></div>
+        <div className="cosmic-particles"></div>
         {children}
       </body>
     </html>

@@ -42,26 +42,26 @@ export const KanbanColumn = React.memo(({
   }, [column.id, onDeleteCard]);
 
   return (
-    <section
-      ref={setNodeRef}
-      className={clsx(
-        "flex min-h-[520px] flex-col rounded-3xl border border-[var(--stroke)] bg-[var(--surface-strong)] p-4 shadow-[var(--shadow)] transition",
-        isOver && "ring-2 ring-[var(--accent-yellow)]"
-      )}
-      data-testid={`column-${column.id}`}
-    >
+      <section
+        ref={setNodeRef}
+        className={clsx(
+          "flex min-h-[520px] flex-col glass-card p-4 transition-smooth",
+          isOver && "shadow-[var(--glow-cyan)] border-[var(--cyan-glow)] bg-[var(--glass-light)]"
+        )}
+        data-testid={`column-${column.id}`}
+      >
       <div className="flex items-start justify-between gap-3">
         <div className="w-full">
           <div className="flex items-center gap-3">
-            <div className="h-2 w-10 rounded-full bg-[var(--accent-yellow)]" />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gray-text)]">
+            <div className="h-2 w-10 rounded-full bg-[var(--purple-neon)] shadow-[var(--glow-purple)]" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
               {cards.length} cards
             </span>
           </div>
           <input
             value={column.title}
             onChange={handleRename}
-            className="mt-3 w-full bg-transparent font-display text-lg font-semibold text-[var(--navy-dark)] outline-none"
+            className="mt-3 w-full bg-transparent font-display text-xl font-semibold text-neon-cyan outline-none transition-smooth focus:text-white"
             aria-label="Column title"
           />
         </div>
@@ -77,7 +77,7 @@ export const KanbanColumn = React.memo(({
           ))}
         </SortableContext>
         {cards.length === 0 && (
-          <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-[var(--stroke)] px-3 py-6 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gray-text)]">
+          <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-[var(--glass-border)] px-3 py-6 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
             Drop a card here
           </div>
         )}

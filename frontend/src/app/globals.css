@@ -1,21 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  --accent-yellow: #ecad0a;
-  --primary-blue: #209dd7;
-  --secondary-purple: #753991;
-  --navy-dark: #032147;
-  --gray-text: #888888;
-  --surface: #f7f8fb;
-  --surface-strong: #ffffff;
-  --stroke: rgba(3, 33, 71, 0.08);
-  --shadow: 0 18px 40px rgba(3, 33, 71, 0.12);
+  /* Cosmic Neon Palette */
+  --cosmic-black: #030308;
+  --cosmic-indigo: #0a0e27;
+  --cyan-glow: #00f5ff;
+  --purple-neon: #b347ff;
+  --amber-warm: #ffaa00;
+
+  /* Text Colors */
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-muted: #6b6e73;
+
+  /* Glass Surfaces */
+  --glass-dark: rgba(255, 255, 255, 0.03);
+  --glass-medium: rgba(255, 255, 255, 0.06);
+  --glass-light: rgba(255, 255, 255, 0.10);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Glow Effects */
+  --glow-cyan: 0 0 20px rgba(0, 245, 255, 0.5), 0 0 40px rgba(0, 245, 255, 0.3);
+  --glow-purple: 0 0 20px rgba(179, 71, 255, 0.5), 0 0 40px rgba(179, 71, 255, 0.3);
+  --glow-amber: 0 0 20px rgba(255, 170, 0, 0.5), 0 0 40px rgba(255, 170, 0, 0.3);
+
+  /* Animation Speeds */
+  --transition-fast: 150ms ease-out;
+  --transition-smooth: 250ms ease-out;
+  --transition-slow: 400ms ease-out;
 }
 
 @theme inline {
-  --color-background: var(--surface);
-  --color-foreground: var(--navy-dark);
+  --color-background: var(--cosmic-black);
+  --color-foreground: var(--text-primary);
   --font-sans: var(--font-body);
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 * {
@@ -23,12 +43,177 @@
 }
 
 body {
-  background: var(--surface);
-  color: var(--navy-dark);
+  background: var(--cosmic-black);
+  color: var(--text-primary);
   font-family: var(--font-body), "Segoe UI", sans-serif;
   margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Cosmic Background Animation */
+.cosmic-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--cosmic-black) 0%, var(--cosmic-indigo) 50%, var(--cosmic-black) 100%);
+}
+
+.cosmic-background::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(0, 245, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(179, 71, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(255, 170, 0, 0.05) 0%, transparent 70%);
+  animation: nebula-shift 20s ease-in-out infinite;
+}
+
+@keyframes nebula-shift {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+    opacity: 0.8;
+  }
+}
+
+/* Particle Animation */
+.cosmic-particles {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, rgba(0, 245, 255, 0.6), transparent),
+    radial-gradient(2px 2px at 40% 70%, rgba(179, 71, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 60% 20%, rgba(255, 170, 0, 0.8), transparent),
+    radial-gradient(2px 2px at 80% 50%, rgba(0, 245, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 10% 60%, rgba(179, 71, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 90% 80%, rgba(255, 170, 0, 0.6), transparent),
+    radial-gradient(1px 1px at 30% 90%, rgba(0, 245, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 70% 40%, rgba(179, 71, 255, 0.6), transparent);
+  background-size: 200% 200%;
+  animation: particle-float 15s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes particle-float {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 200%; }
+}
+
+/* Glow Pulse Animation */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.4), 0 0 20px rgba(0, 245, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.6), 0 0 40px rgba(0, 245, 255, 0.4);
+  }
+}
+
+/* Float Animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Fade In Animation */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade Out Animation */
+@keyframes fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--transition-smooth) ease-out;
+}
+
+.animate-fade-out {
+  animation: fade-out var(--transition-smooth) ease-out;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--glass-dark);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+}
+
+.glass-card {
+  background: var(--glass-dark);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+
+.glass-input {
+  background: var(--glass-dark);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  transition: all var(--transition-smooth);
+}
+
+.glass-input:focus {
+  border-color: var(--cyan-glow);
+  box-shadow: var(--glow-cyan);
+  outline: none;
+}
+
+/* Neon Text */
+.text-neon-cyan {
+  color: var(--cyan-glow);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.6);
+}
+
+.text-neon-purple {
+  color: var(--purple-neon);
+  text-shadow: 0 0 10px rgba(179, 71, 255, 0.6);
+}
+
+.text-neon-amber {
+  color: var(--amber-warm);
+  text-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--cyan-glow), var(--purple-neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 3D Tilt Effect Container */
+.tilt-container {
+  perspective: 1000px;
+}
+
+.tilt-element {
+  transition: transform var(--transition-smooth);
+  transform-style: preserve-3d;
+}
+
+/* Smooth Transitions */
+.transition-smooth {
+  transition: all var(--transition-smooth) ease-out;
 }
 
 .font-display {
   font-family: var(--font-display), "Segoe UI", sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
 }
