@@ -34,35 +34,61 @@ const findColumnId = (columns: Column[], id: string) => {
   return columns.find((column) => column.cardIds.includes(id))?.id;
 };
 
-export const KanbanBoard = ({ onLogout, initialBoard }: KanbanBoardProps) => {
+export const KanbanBoard = ({ userId, onLogout, initialBoard }: KanbanBoardProps & { userId?: number }) => {
   const [board, setBoard] = useState<BoardData>(() => initialBoard ?? initialData);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
-  const [userId, setUserId] = useState<number | null>(null);
+  const [userToken, setUserToken] = useState<string | null>(null);
   const pointerPosRef = useRef<{ x: number; y: number } | null>(null);
   const activePointerListenerRef = useRef<((e: PointerEvent) => void) | null>(null);
 
   useEffect(() => {
+    const token = userToken;
+    if (token && userId) {
+      // Verify token matches the userId
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.sub !== userId.toString()) {
+          // Token mismatch, clear it
+          setUserToken(null);
+        }
+      } catch (err) {
+        setUserToken(null);
+      }
+    }
+  }, [userToken, userId]);
+
+  useEffect(() => {
     const loadBoard = async () => {
       try {
-        const userRes = await fetch("/api/users/user");
+        const token = userToken;
+        if (!token) return;
+
+        const userRes = await fetch("/api/users/user", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
         if (!userRes.ok) return;
         const user = await userRes.json();
-        setUserId(user.id);
-        
-        const boardsRes = await fetch(`/api/users/${user.id}/boards`);
+
+        const boardsRes = await fetch(`/api/users/${user.id}/boards`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
         if (!boardsRes.ok) return;
         const boards = await boardsRes.json();
-        
+
         if (boards.length > 0) {
           const dbBoard: DBBoard = boards[0];
           dbBoard.columns.sort((a: DBColumn, b: DBColumn) => a.order - b.order);
-          
+
           const columns: Column[] = dbBoard.columns.map((c: DBColumn) => ({
             id: toColId(c.id),
             title: c.title,
             cardIds: c.cards.sort((a: DBCard, b: DBCard) => a.order - b.order).map((card: DBCard) => toCardId(card.id)),
           }));
-          
+
           const cards: Record<string, Card> = {};
           dbBoard.columns.forEach((c: DBColumn) => {
             c.cards.forEach((card: DBCard) => {
@@ -74,16 +100,16 @@ export const KanbanBoard = ({ onLogout, initialBoard }: KanbanBoardProps) => {
               };
             });
           });
-          
+
           setBoard({ columns, cards });
         }
       } catch (error) {
         console.error("Failed to load backend board", error);
       }
     };
-    
+
     loadBoard();
-  }, []);
+  }, [userToken]);
 
   const sensorOptions = useMemo(() => ({
     activationConstraint: { distance: 6 },

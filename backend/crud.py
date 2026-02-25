@@ -1,16 +1,31 @@
 from sqlalchemy.orm import Session
 import models, schemas
+import bcrypt
+from typing import Optional
 
 # Users
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+def hash_password(plain_password: str) -> str:
+    return bcrypt.hashpw(plain_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
 def create_user(db: Session, user: schemas.UserCreate):
-    db_user = models.User(username=user.username, password_hash=user.password)
+    hashed_password = hash_password(user.password)
+    db_user = models.User(username=user.username, password_hash=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def authenticate_user(db: Session, username: str, password: str) -> Optional[models.User]:
+    user = get_user_by_username(db, username)
+    if not user or not verify_password(password, user.password_hash):
+        return None
+    return user
 
 # Boards
 def get_boards(db: Session, user_id: int):

@@ -1,8 +1,18 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { Login } from "./Login";
 
-test("requires correct credentials to login", () => {
+test("requires correct credentials to login", async () => {
+  global.fetch = vi.fn().mockImplementation(async (url, config) => {
+    if (config?.body) {
+      const body = JSON.parse(config.body as string);
+      if (body.username === "user" && body.password === "password") {
+        return { ok: true, json: async () => ({ access_token: "fake-token" }) };
+      }
+    }
+    return { ok: false, json: async () => ({ detail: "Invalid credentials" }) };
+  });
+
   const handleLogin = vi.fn();
   render(<Login onLogin={handleLogin} />);
 
@@ -16,12 +26,17 @@ test("requires correct credentials to login", () => {
   fireEvent.click(submitButton);
 
   expect(handleLogin).not.toHaveBeenCalled();
-  expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+  
+  await waitFor(() => {
+    expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+  });
 
   // Valid test
   fireEvent.change(usernameInput, { target: { value: "user" } });
   fireEvent.change(passwordInput, { target: { value: "password" } });
   fireEvent.click(submitButton);
 
-  expect(handleLogin).toHaveBeenCalledTimes(1);
+  await waitFor(() => {
+    expect(handleLogin).toHaveBeenCalledTimes(1);
+  });
 });

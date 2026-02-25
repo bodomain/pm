@@ -21,6 +21,11 @@ def test_users_boards_columns_cards(client, db):
     assert response.json()["username"] == "testuser"
     user_id = response.json()["id"]
 
+    # Login and set token
+    login_response = client.post("/api/auth/login", json={"username": "testuser", "password": "pw"})
+    token = login_response.json()["access_token"]
+    client.headers["Authorization"] = f"Bearer {token}"
+
     # Create Board
     response = client.post("/api/boards", json={"title": "Test Board", "user_id": user_id})
     assert response.status_code == 200

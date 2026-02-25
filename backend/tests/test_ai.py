@@ -39,6 +39,11 @@ async def test_ai_chat_endpoint(client, db):
     with patch('main.process_chat', new_callable=AsyncMock) as mock_process:
         mock_process.return_value = mock_ai_response
         
+        # Login to get token
+        login_response = client.post("/api/auth/login", json={"username": "aiuser", "password": "pw"})
+        token = login_response.json()["access_token"]
+        client.headers["Authorization"] = f"Bearer {token}"
+
         response = client.post("/api/ai/chat", json={"message": "Add a new task", "user_id": user.id})
         
         assert response.status_code == 200
